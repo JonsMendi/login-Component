@@ -1,7 +1,8 @@
-import { Fragment, useState, useEffect, useReducer } from "react";
+import { Fragment, useState, useEffect, useReducer, useContext } from "react";
 import Card from "../UI/Card";
 import Button from "../UI/Button";
 import styles from "./Login.module.css";
+import AuthContext from "../../store/auth-context";
 
 const emailReducer = (state, action) => {
   if (action.type === "INPUT_MAIL") {
@@ -39,6 +40,8 @@ const Login = (props) => {
     value: "",
     isValid: null,
   });
+
+  const ctx = useContext(AuthContext);
 
   // Under we are not assigning a new value to "isValid". When we are destructuring and object we can use this
   // technique to give different names for the same value (can be very handy);
@@ -108,7 +111,7 @@ const Login = (props) => {
 
   const onSubmitHandler = (e) => {
     e.preventDefault();
-    props.onLogin(emailState.value, passwordState.value);
+    ctx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
