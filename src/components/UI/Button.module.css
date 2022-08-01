@@ -1,12 +1,12 @@
 .button {
   position: relative;
-  left: 80px;
+  /* left: 100px; */
   font: inherit;
   border: 1px solid #e77c1e;
   border-radius: 20px;
   background: #d6a834;
   color: white;
-  padding: 0.5rem 3rem;
+  padding: 0.5rem 4rem;
   cursor: pointer;
 }
 

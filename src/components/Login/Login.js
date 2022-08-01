@@ -1,4 +1,11 @@
-import { Fragment, useState, useEffect, useReducer, useContext } from "react";
+import {
+  Fragment,
+  useState,
+  useEffect,
+  useReducer,
+  useContext,
+  useRef,
+} from "react";
 import Card from "../UI/Card";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
@@ -43,6 +50,8 @@ const Login = (props) => {
   });
 
   const ctx = useContext(AuthContext);
+  const emailInputRef = useRef();
+  const passwordInputRef = useRef();
 
   // Under we are not assigning a new value to "isValid". When we are destructuring and object we can use this
   // technique to give different names for the same value (can be very handy);
@@ -112,7 +121,16 @@ const Login = (props) => {
 
   const onSubmitHandler = (e) => {
     e.preventDefault();
-    ctx.onLogin(emailState.value, passwordState.value);
+    if (formIsValid) {
+      ctx.onLogin(emailState.value, passwordState.value);
+    } else if (!emailOperation) {
+      // here we call the method "activate" from Input.js by the name "lightUpInput"
+      // this is possible thanks to "React.forwardRef" that exposes the Input component
+      // and useImperativeHandle that allows to use a specific method from Input component
+      emailInputRef.current.lightUpInput();
+    } else {
+      passwordInputRef.current.lightUpInput();
+    }
   };
 
   return (
@@ -120,6 +138,7 @@ const Login = (props) => {
       <Card className={styles.login}>
         <form onSubmit={onSubmitHandler}>
           <Input
+            ref={emailInputRef}
             label="E-Mail:"
             isValid={emailOperation}
             type="email"
@@ -129,6 +148,7 @@ const Login = (props) => {
             onBlur={validationEmailHandler}
           ></Input>
           <Input
+            ref={passwordInputRef}
             label="Password:"
             isValid={passwordOperation}
             type="password"
@@ -138,7 +158,7 @@ const Login = (props) => {
             onBlur={validationPasswordHandler}
           ></Input>
 
-          <Button type="submit" className={styles.btn} disabled={!formIsValid}>
+          <Button type="submit" className={styles.btn}>
             Login
           </Button>
         </form>
