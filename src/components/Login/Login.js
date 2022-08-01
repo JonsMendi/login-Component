@@ -1,14 +1,51 @@
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useReducer } from "react";
 import Card from "../UI/Card";
 import Button from "../UI/Button";
 import styles from "./Login.module.css";
 
+const emailReducer = (state, action) => {
+  if (action.type === "INPUT_MAIL") {
+    return { value: action.val, isValid: action.val.includes("@") };
+  }
+  if (action.type === "INPUT_BLUR") {
+    return { value: state.value, isValid: state.value.includes("@") };
+  }
+  return { value: "", isValid: false };
+};
+
+const passwordReducer = (state, action) => {
+  if (action.type === "INPUT_PASSWORD") {
+    return { value: action.val, isValid: action.val.trim().length > 6 };
+  }
+  if (action.type === "INPUT_BLUR_PASSWORD") {
+    return { value: state.value, isValid: state.value.trim().length > 6 };
+  }
+  return { value: "", isValid: false };
+};
+
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState("");
-  const [validateEmail, setValidateEmail] = useState();
-  const [enteredPassword, setEnteredPassword] = useState("");
-  const [validatePassword, setValidatePassword] = useState();
+  // const [enteredEmail, setEnteredEmail] = useState("");
+  // const [validateEmail, setValidateEmail] = useState();
+  // const [enteredPassword, setEnteredPassword] = useState("");
+  // const [validatePassword, setValidatePassword] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
+
+  const [emailState, dispatchedEmail] = useReducer(emailReducer, {
+    value: "",
+    isValid: null,
+  });
+
+  const [passwordState, dispatchedPassword] = useReducer(passwordReducer, {
+    value: "",
+    isValid: null,
+  });
+
+  // Under we are not assigning a new value to "isValid". When we are destructuring and object we can use this
+  // technique to give different names for the same value (can be very handy);
+  // this will then used in useEffect dependencies to re-run just when the "isValue" key changed,
+  //instead of all the object keys (in this case the other key is "value").
+  const { isValid: emailOperation } = emailState;
+  const { isValid: passwordOperation } = passwordState;
 
   useEffect(
     () => {
@@ -25,11 +62,10 @@ const Login = (props) => {
       // Like that, we debounce being sure that setTimeout will just run on time after the user stop to type.
       // Otherwise the function will re-run for every single word/number/whatever.
       // And that is possible to reach using the clearTimeout in the so called "clean up" function
+
       const checkValidation = setTimeout(() => {
         console.log("Checking validation");
-        setFormIsValid(
-          enteredEmail.includes("@") && enteredPassword.trim().length > 6
-        );
+        setFormIsValid(emailOperation && passwordOperation);
       }, 500);
 
       // Under, the "clean up" functions enables that we can "clear" the setTimeout.
@@ -39,35 +75,40 @@ const Login = (props) => {
       };
     },
     // In this case makes sense to re-check this variables for useEffect re-checked just, when the value of password or email changes.
-    [enteredEmail, enteredPassword]
+    [emailOperation, passwordOperation]
   );
+
   // to create a validation criteria we need to set this method for each input field
   // eah one with is own rules.
   const validationEmailHandler = () => {
-    setValidateEmail(enteredEmail.includes("@"));
+    dispatchedEmail({ type: "INPUT_BLUR" });
   };
 
   // to create a validation criteria we need to set this method for each input field
   // eah one with is own rules.
   const validationPasswordHandler = () => {
-    setValidatePassword(enteredPassword.trim().length > 6);
+    dispatchedPassword({ type: "INPUT_BLUR_PASSWORD" });
   };
 
   // then, in the entered handler we need to check if it validated calling the setFormValid to allow
   // or not through a boolean.
   const enteredEmailHandler = (event) => {
-    setEnteredEmail(event.target.value);
+    dispatchedEmail({ type: "INPUT_MAIL", val: event.target.value });
+
+    setFormIsValid(event.target.value.includes("@") && passwordState.isValid);
   };
 
   // then, in the entered handler we need to check if it validated calling the setFormValid to allow
   // or not through a boolean.
   const enteredPasswordHandler = (event) => {
-    setEnteredPassword(event.target.value);
+    dispatchedPassword({ type: "INPUT_PASSWORD", val: event.target.value });
+
+    setFormIsValid(emailState.isValid && event.target.value.trim().length > 6);
   };
 
   const onSubmitHandler = (e) => {
     e.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, passwordState.value);
   };
 
   return (
@@ -76,28 +117,28 @@ const Login = (props) => {
         <form onSubmit={onSubmitHandler}>
           <div
             className={`${styles.control} ${
-              validateEmail === false ? styles.invalid : ""
+              emailState.isValid === false ? styles.invalid : ""
             }`}
           >
             <label htmlFor="email">Email:</label>
             <input
               type="email"
               id="email"
-              value={enteredEmail}
+              value={emailState.value}
               onChange={enteredEmailHandler}
               onBlur={validationEmailHandler}
             />
           </div>
           <div
             className={`${styles.control} ${
-              validatePassword === false ? styles.invalid : ""
+              passwordState.isValid === false ? styles.invalid : ""
             }`}
           >
             <label htmlFor="password">Password:</label>
             <input
               type="password"
               id="password"
-              value={enteredPassword}
+              value={passwordState.value}
               onChange={enteredPasswordHandler}
               onBlur={validationPasswordHandler}
             />
