@@ -1,10 +1,12 @@
 .button {
+  position: relative;
+  left: 80px;
   font: inherit;
   border: 1px solid #e77c1e;
-  border-radius: 12px;
+  border-radius: 20px;
   background: #d6a834;
   color: white;
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 3rem;
   cursor: pointer;
 }
 
@@ -16,4 +18,14 @@
 
 .button:focus {
   outline: none;
+}
+
+button:disabled,
+button:focus:disabled,
+button:hover:disabled,
+button:active:disabled {
+  background: #ccc;
+  border-color: #ccc;
+  color: #666666;
+  cursor: not-allowed;
 }
